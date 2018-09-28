@@ -59,12 +59,20 @@ class OccupancyField(object):
         distances, indices = nbrs.kneighbors(X)
 
         self.closest_occ = {}
+        self.closest_occ_mult = {}
         curr = 0
         for i in range(self.map.info.width):
             for j in range(self.map.info.height):
                 ind = i + j*self.map.info.width
                 self.closest_occ[ind] = \
                     distances[curr][0]*self.map.info.resolution
+                num_dist = len(distances[curr])
+                if (num_dist > 10):
+                    self.closest_occ_mult[ind] = \
+                        distances[curr][0:10]*self.map.info.resolution
+                else:
+                    self.closest_occ_mult[ind] = \
+                        distances[curr][0:num_dist]*self.map.info.resolution
                 curr += 1
 
     def get_closest_obstacle_distance(self, x, y):
@@ -86,3 +94,23 @@ class OccupancyField(object):
         if ind >= self.map.info.width*self.map.info.height or ind < 0:
             return float('nan')
         return self.closest_occ[ind]
+
+    def get_multiple_closest_obstacle_distance(self, x, y):
+        """ Compute the 10 (or fewer, if we have fewer obstacles) closest obstacles
+            to the specified (x,y) coordinate in the map.  If the (x,y) coordinate
+            is out of the map boundaries, nan will be returned."""
+        x_coord = \
+            int((x - self.map.info.origin.position.x)/self.map.info.resolution)
+        y_coord = \
+            int((y - self.map.info.origin.position.y)/self.map.info.resolution)
+
+        # check if we are in bounds
+        if x_coord > self.map.info.width or x_coord < 0:
+            return float('nan')
+        if y_coord > self.map.info.height or y_coord < 0:
+            return float('nan')
+
+        ind = x_coord + y_coord*self.map.info.width
+        if ind >= self.map.info.width*self.map.info.height or ind < 0:
+            return float('nan')
+        return self.closest_occ_mult[ind]

@@ -8,19 +8,22 @@ from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 
 class Particle(object):
-    """ Represents a particle.
+    """Represents a single particle.
     Atrributes
     ----------
     position: a Pose representing the position of the particle on the map frame.
+    weight: a floating point value representing the likelihood that the
+        particle is at the location of the robot.
+    sensor_model: a SensorModel representing the LIDAR scan and the
+        accompanying noise introduced by the system.
     """
     def __init__(self, position, weight, sensor_model):
-        # TODO: add documentation to describe what these attributes are.
         self.position = position
         self.weight = weight
         self.sensor_model = sensor_model
 
     def integrate_observation(self, observation):
-        """ integrate an observation and update the weight of the particle.
+        """Integrate an observation and update the weight of the particle.
         
         Parameters
         ----------
@@ -30,11 +33,21 @@ class Particle(object):
             self.weight *= self.sensor_model.get_likelihood(self.position, distance, angle)
 
     def predict(self, delta):
-        """ predict the next position based on the delta measured using
-            the odometry """
+        """Predict the next position based on the delta measured using
+        the odometry
+        
+        Parameters
+        ----------
+        delta: a Pose representing the change position the particle should be moved to.
+        """
         self.position  = self.sensor_model.sample_prediction(self.position, delta)
 
     def normalize_weight(self, Z):
-        """ adjust the particle weight using the specified
-            normalization factor (Z) """
+        """Adjust the particle weight using the specified
+        normalization factor
+        
+        Parameters
+        ----------
+        Z: an integer normalization factor with which to adjust the particle weight.
+        """
         self.weight /= Z

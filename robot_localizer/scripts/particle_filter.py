@@ -17,20 +17,37 @@ class ParticleFilter(object):
 
 	def normalize(self):
 		""" Normalize all particles using the sum of all of their weights """
-		pass
+		w_sum = sum([p.weight for p in self.particles])
+		[p.normalize_weight(w_sum) for p in self.particles]
 
 	def integrate_observation(self):
 		""" Integrate observations for each of the particles using the observation """
-		pass
+		for p in self.particles:
+			p.integrate_observation(observation)
 
 	def predict(self):
 		""" Predict the next position of each of the particles using the odometry of the robot """
-		pass
+		for p in self.particles:
+			p.predict(delta)
 
-	def get_weighted_values(particles):
-		""" Returns a random sample of particles based on how likely they are to be chosen. This means that if a particle is more likely to be in the correct position, it will appear more often in the returned sample """
-		pass
+	@staticmethod
+	def weighted_values(values, probabilities, size):
+		""" Return a random sample of size elements from the set values with the specified probabilities
+			values: the values to sample from (numpy.ndarray)
+			probabilities: the probability of selecting each element in values (numpy.ndarray)
+			size: the number of samples
+		"""
+		bins = np.add.accumulate(probabilities)
+		indices = np.digitize(random_sample(size), bins)
+		sample = []
+		for ind in indices:
+			sample.append(deepcopy(values[ind]))
+		return sample
 
 	def resample(self):
 		""" Update the list of particles using the weighted values. Reset the weights. This should result in a tighter grouping of particles"""
-		pass
+		self.particles = ParticleFilter.weighted_values(self.particles,
+														[p.weight for p in self.particles],
+														len(self.particles))
+		for p in self.particles:
+			p.weight = 1./len(self.particles)

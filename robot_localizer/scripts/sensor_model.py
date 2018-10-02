@@ -60,7 +60,7 @@ class SensorModel(object):
             
             Parmeters
             ---------
-            position: a PoseWithCovarianceStamped object representing the
+            position: a Pose object representing the
                 position of a particle.
             observation: a single reading from the LIDAR scan.
             direction: the angle from which the observation came from relative
@@ -95,4 +95,15 @@ class SensorModel(object):
             The predicted next position of the particle with some random noise added. 
             """
                 # TODO: this probably needs to be changed to do arithmetic on Pose objects.
-                return (position + delta) * np.random.random_sample() * self.odometry_noise_rate
+
+                new_position = Pose()
+                new_position.position.x = position.position.x + delta.position.x * np.random.random_sample() * self.odometry_noise_rate
+                new_position.position.y = position.position.y + delta.position.y * np.random.random_sample() * self.odometry_noise_rate
+                new_position.position.z = position.position.z + delta.position.z * np.random.random_sample() * self.odometry_noise_rate
+                
+                new_position.orientation.w = position.orientation.w + delta.orientation.w * np.random.random_sample() * self.odometry_noise_rate
+                new_position.orientation.x = position.orientation.x + delta.orientation.x * np.random.random_sample() * self.odometry_noise_rate
+                new_position.orientation.y = position.orientation.y + delta.orientation.y * np.random.random_sample() * self.odometry_noise_rate
+                new_position.orientation.z = position.orientation.z + delta.orientation.z * np.random.random_sample() * self.odometry_noise_rate
+
+                return new_position

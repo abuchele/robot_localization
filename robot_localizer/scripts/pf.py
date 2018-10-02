@@ -118,13 +118,14 @@ class ParticleFilterNode(object):
 			# map to odom transform
 			self.transform_helper.send_last_map_to_odom_transform()
 
-			if self.last_scan != None:
-				self.particle_filter.integrate_observation(self.last_scan)
-				self.last_scan = None
+                        if len(self.particle_filter.particles) > 0:
+                            if self.last_scan != None:
+                                    self.particle_filter.integrate_observation(self.last_scan)
+                                    self.last_scan = None
 
-			self.particle_filter.normalize()
-			self.publish_particles()
-			self.particle_filter.resample()
+                            self.particle_filter.normalize()
+                            self.publish_particles()
+                            self.particle_filter.resample()
 
 			r.sleep()
 

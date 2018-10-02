@@ -6,7 +6,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
-
+from particle import Particle
+from particle_field import ParticleField
+from sensor_model import SensorModel
 
 class ParticleFilter(object):
 	def __init__(self):

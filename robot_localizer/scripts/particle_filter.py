@@ -9,6 +9,9 @@ from occupancy_field import OccupancyField
 from particle import Particle
 from sensor_model import SensorModel
 
+import numpy as np
+from numpy.random import random_sample
+
 class ParticleFilter(object):
 	def __init__(self):
 		self.particles = []
@@ -48,7 +51,7 @@ class ParticleFilter(object):
 	def resample(self):
 		""" Update the list of particles using the weighted values. Reset the weights. This should result in a tighter grouping of particles"""
 		self.particles = ParticleFilter.weighted_values(self.particles,
-														[p.weight for p in self.particles],
-														len(self.particles))
+                                                                                                    [p.weight for p in self.particles],
+                                                                                                    len(self.particles))
 		for p in self.particles:
 			p.weight = 1./len(self.particles)

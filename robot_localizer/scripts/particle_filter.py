@@ -42,6 +42,8 @@ class ParticleFilter(object):
 			size: the number of samples
 		"""
 		bins = np.add.accumulate(probabilities)
+		print(probabilities)
+		print(bins)
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
 		for ind in indices:

@@ -51,7 +51,7 @@ class ParticleFilterNode(object):
 
 	def update_scan(self, msg):
 		"""Updates the scan to the most recent reading"""
-		self.last_scan = [(i, msg.ranges[i]) for i in len(msg.ranges)]
+		self.last_scan = [(i, msg.ranges[i]) for i in range(len(msg.ranges))]
 
 	def update_position(self, msg):
 		"""Calculate delta in position since last odometry reading, update current odometry reading"""
@@ -106,8 +106,8 @@ class ParticleFilterNode(object):
 		self.reinitialize_particles(msg.pose.pose)
 
 		# TODO this should be deleted before posting
-		self.transform_helper.fix_map_to_odom_transform(msg.pose.pose,
-														msg.header.stamp)
+		#self.transform_helper.fix_map_to_odom_transform(msg.pose.pose,
+														#msg.header.stamp)
 		# TODO: initialize your particle filter based on the xy_theta tuple
 
 	def publish_particles(self):
@@ -124,14 +124,14 @@ class ParticleFilterNode(object):
 			# map to odom transform
 			self.transform_helper.send_last_map_to_odom_transform()
 
-                        if len(self.particle_filter.particles) > 0:
-                            if self.last_scan != None:
-                                    self.particle_filter.integrate_observation(self.last_scan)
-                                    self.last_scan = None
+			if len(self.particle_filter.particles) > 0:
+				if self.last_scan != None:
+				    self.particle_filter.integrate_observation(self.last_scan)
+				    self.last_scan = None
 
-                            self.particle_filter.normalize()
-                            self.publish_particles()
-                            self.particle_filter.resample()
+				self.particle_filter.normalize()
+				self.publish_particles()
+				self.particle_filter.resample()
 
 			r.sleep()
 

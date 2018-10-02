@@ -5,6 +5,8 @@
 from __future__ import print_function, division
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField

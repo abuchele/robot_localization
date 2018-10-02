@@ -10,7 +10,7 @@ from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 
 
-class ParticleFilter(object):
+class ParticleFilterNode(object):
     """ The class that represents a Particle Filter ROS Node
     """
     def __init__(self):
@@ -55,5 +55,5 @@ class ParticleFilter(object):
 
 
 if __name__ == '__main__':
-    n = ParticleFilter()
+    n = ParticleFilterNode()
     n.run()

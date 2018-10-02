@@ -7,26 +7,24 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 
-
 class Particle(object):
-	def __init__(self):
-		self.pose = Pose()
-		self.weight = 0.0
-		self.sensor_model = None
+    """ Represents a particle """
+    def __init__(self, position, weight, sensor_model):
+        self.position = position
+        self.weight = weight
+        self.sensor_model = sensor_model
 
+    def integrate_observation(self, observation):
+        """ integrate an observation """
+        self.weight *= self.sensor_model.get_likelihood(observation.north_laser, self.position, 1)
+        self.weight *= self.sensor_model.get_likelihood(observation.south_laser, self.position, -1)
 
-	def set_pose(self, pose):
-		self.pose = pose
+    def predict(self, delta):
+        """ predict the next position based on the delta measured using
+            the odometry """
+        self.position  = self.sensor_model.sample_prediction(self.position+delta)
 
-	def set_weight(self, weight):
-		self.weight = weight
-
-	def integrate_observation(self):
-		pass
-
-	def predict_position(self):
-		pass
-
-	def normalize_weight(self):
-		pass
-		
+    def normalize_weight(self, Z):
+        """ adjust the particle weight using the specified
+            normalization factor (Z) """
+        self.weight /= Z

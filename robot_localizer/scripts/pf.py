@@ -8,6 +8,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
+from particle import Particle
 
 
 class ParticleFilterNode(object):
@@ -31,6 +32,7 @@ class ParticleFilterNode(object):
         # as part of the project
         self.occupancy_field = OccupancyField()
         self.transform_helper = TFHelper()
+        self.particles = PoseArray()
 
     def update_initial_pose(self, msg):
         """ Callback function to handle re-initializing the particle filter
@@ -54,5 +56,5 @@ class ParticleFilterNode(object):
             r.sleep()
 
 if __name__ == '__main__':
-    n = ParticleFilterNode()
+    n = ParticleFilter()
     n.run()

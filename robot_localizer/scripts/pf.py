@@ -11,6 +11,8 @@ from occupancy_field import OccupancyField
 from particle_filter import ParticleFilter
 from particle import Particle
 
+from numpy.random import randn, random_sample
+
 
 class ParticleFilterNode(object):
     """ The class that represents a Particle Filter ROS Node
@@ -37,9 +39,12 @@ class ParticleFilterNode(object):
         self.filter = ParticleFilter()
         self.occupancy_field = OccupancyField()
         self.transform_helper = TFHelper()
-        self.position_delta = None
-        self.scan = None
-        self.odometry = None
+
+        self.position_delta = None # Pose, delta from current to previous odometry reading
+        self.scan = None # list of ranges
+        self.odometry = None # Pose, current odometry reading
+
+        self.n_particles = 200 # number of particles
 
     def update_scan(self, msg):
         """Updates the scan to the most recent reading"""
@@ -67,9 +72,21 @@ class ParticleFilterNode(object):
         # TODO: send delta where it's going
 
 
-    def reinitialize_particles(self, initial_position):
-        """Reinitialize particles when a new initial position is given."""
-        pass
+    def reinitialize_particles(self, initial_pose):
+        """Reinitialize particles when a new initial pose is given."""
+        for i in range(self.n_particles):
+            pose = Pose()
+            pose.position.x = initial_pose.position.x + 2*randn() - 1
+            pose.position.y = initial_pose.position.y + 2*randn() - 1
+
+            pose.orientation.x = initial_pose.orientation.x + 2*randn() - 1
+            pose.orientation.y = initial_pose.orientation.y + 2*randn() - 1
+            pose.orientation.z = initial_pose.orientation.z + 2*randn() - 1
+            pose.orientation.w = initial_pose.orientation.w + 2*randn() - 1
+
+            self.particle_filter.add_particle(Particle(position=pose,
+                                          weight=1/float(self.n_particles),
+                                          sensor_model=self.sensor_model))
 
     def update_initial_pose(self, msg):
         """ Callback function to handle re-initializing the particle filter
@@ -86,8 +103,7 @@ class ParticleFilterNode(object):
     def publish_particles(self):
         """ Extract pose from each particle and publish them as PoseArray"""
         pose_array = PoseArray()
-        for particle in particle_filter.particles:
-            pose_array.poses.append(particle.position)
+        pose_array.poses = [p.position for p in particle_filter.particles]
         self.particle_pub.publish(pose_array)
 
     def run(self):

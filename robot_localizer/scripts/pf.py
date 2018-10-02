@@ -56,7 +56,7 @@ class ParticleFilterNode(object):
 		"""Calculate delta in position since last odometry reading, update current odometry reading"""
 		self.position_delta = Pose()
 		self.position_delta.position = Point()
-		self.position_delta.orientataion = Quaternion()
+		self.position_delta.orientation = Quaternion()
 
 		this_pose = msg.pose.pose
 
@@ -64,10 +64,10 @@ class ParticleFilterNode(object):
 		self.position_delta.position.y = this_pose.position.y - self.odometry.position.y
 		self.position_delta.position.z = this_pose.position.z - self.odometry.position.z
 
-		self.position_delta.orientataion.x = this_pose.orientataion.x - self.odometry.orientataion.x
-		self.position_delta.orientataion.y = this_pose.orientataion.y - self.odometry.orientataion.y
-		self.position_delta.orientataion.z = this_pose.orientataion.z - self.odometry.orientataion.z
-		self.position_delta.orientataion.w = this_pose.orientataion.w - self.odometry.orientataion.w
+		self.position_delta.orientation.x = this_pose.orientation.x - self.odometry.orientation.x
+		self.position_delta.orientation.y = this_pose.orientation.y - self.odometry.orientation.y
+		self.position_delta.orientation.z = this_pose.orientation.z - self.odometry.orientation.z
+		self.position_delta.orientation.w = this_pose.orientation.w - self.odometry.orientation.w
 
 		self.odometry = this_pose
 
@@ -107,7 +107,7 @@ class ParticleFilterNode(object):
 	def publish_particles(self):
 		""" Extract pose from each particle and publish them as PoseArray"""
 		pose_array = PoseArray()
-		pose_array.poses = [p.position for p in particle_filter.particles]
+		pose_array.poses = [p.position for p in self.particle_filter.particles]
 		self.particle_pub.publish(pose_array)
 
 	def run(self):

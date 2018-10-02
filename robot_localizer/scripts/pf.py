@@ -53,7 +53,6 @@ class ParticleFilterNode(object):
             self.transform_helper.send_last_map_to_odom_transform()
             r.sleep()
 
-
 if __name__ == '__main__':
     n = ParticleFilterNode()
     n.run()

@@ -22,6 +22,18 @@ class ParticleFilterNode(object):
 	def __init__(self):
 		rospy.init_node('pf')
 
+		# create instances of two helper objects that are provided to you
+		# as part of the project
+		self.particle_filter = ParticleFilter()
+		self.occupancy_field = OccupancyField()
+		self.transform_helper = TFHelper()
+
+		self.position_delta = None # Pose, delta from current to previous odometry reading
+		self.last_scan = None # list of ranges
+		self.odom = None # Pose, current odometry reading
+
+		self.n_particles = 200 # number of particles
+
 		# pose_listener responds to selection of a new approximate robot
 		# location (for instance using rviz)
 		rospy.Subscriber("initialpose",
@@ -36,17 +48,6 @@ class ParticleFilterNode(object):
 											PoseArray,
 											queue_size=10)
 
-		# create instances of two helper objects that are provided to you
-		# as part of the project
-		self.particle_filter = ParticleFilter()
-		self.occupancy_field = OccupancyField()
-		self.transform_helper = TFHelper()
-
-		self.position_delta = None # Pose, delta from current to previous odometry reading
-		self.last_scan = None # list of ranges
-		self.odometry = None # Pose, current odometry reading
-
-		self.n_particles = 200 # number of particles
 
 	def update_scan(self, msg):
 		"""Updates the scan to the most recent reading"""
@@ -60,16 +61,21 @@ class ParticleFilterNode(object):
 
 		this_pose = msg.pose.pose
 
-		self.position_delta.position.x = this_pose.position.x - self.odometry.position.x
-		self.position_delta.position.y = this_pose.position.y - self.odometry.position.y
-		self.position_delta.position.z = this_pose.position.z - self.odometry.position.z
+		if self.odom is not None:
 
-		self.position_delta.orientation.x = this_pose.orientation.x - self.odometry.orientation.x
-		self.position_delta.orientation.y = this_pose.orientation.y - self.odometry.orientation.y
-		self.position_delta.orientation.z = this_pose.orientation.z - self.odometry.orientation.z
-		self.position_delta.orientation.w = this_pose.orientation.w - self.odometry.orientation.w
+			self.position_delta.position.x = this_pose.position.x - self.odom.position.x
+			self.position_delta.position.y = this_pose.position.y - self.odom.position.y
+			self.position_delta.position.z = this_pose.position.z - self.odom.position.z
 
-		self.odometry = this_pose
+			self.position_delta.orientation.x = this_pose.orientation.x - self.odom.orientation.x
+			self.position_delta.orientation.y = this_pose.orientation.y - self.odom.orientation.y
+			self.position_delta.orientation.z = this_pose.orientation.z - self.odom.orientation.z
+			self.position_delta.orientation.w = this_pose.orientation.w - self.odom.orientation.w
+
+		else:
+			self.position_delta = this_pose
+
+		self.odom = this_pose
 
 		self.particle_filter.predict(self.position_delta)
 

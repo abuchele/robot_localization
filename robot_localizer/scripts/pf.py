@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
+from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
@@ -22,11 +22,16 @@ class ParticleFilterNode(object):
 	def __init__(self):
 		rospy.init_node('pf')
 
+		real_robot = False
 		# create instances of two helper objects that are provided to you
 		# as part of the project
 		self.particle_filter = ParticleFilter()
 		self.occupancy_field = OccupancyField()
 		self.transform_helper = TFHelper()
+		self.sensor_model = sensor_model = SensorModel(model_noise_rate=0.05,
+                                   odom_noise_rate=0.1,
+                                   world_model=self.occupancy_field,
+                                   real_robot=real_robot)
 
 		self.position_delta = None # Pose, delta from current to previous odometry reading
 		self.last_scan = None # list of ranges
@@ -36,8 +41,8 @@ class ParticleFilterNode(object):
 
 		# pose_listener responds to selection of a new approximate robot
 		# location (for instance using rviz)
-		rospy.Subscriber("initialpose",
-						 PoseWithCovarianceStamped,
+		rospy.Subscriber("map_pose",
+						 PoseStamped,
 						 self.update_initial_pose)
 
 		rospy.Subscriber("odom", Odometry, self.update_position)
@@ -101,13 +106,13 @@ class ParticleFilterNode(object):
 			based on a pose estimate.  These pose estimates could be generated
 			by another ROS Node or could come from the rviz GUI """
 		xy_theta = \
-			self.transform_helper.convert_pose_to_xy_and_theta(msg.pose.pose)
+			self.transform_helper.convert_pose_to_xy_and_theta(msg.pose)
 
-		self.reinitialize_particles(msg.pose.pose)
+		self.reinitialize_particles(msg.pose)
 
 		# TODO this should be deleted before posting
-		#self.transform_helper.fix_map_to_odom_transform(msg.pose.pose,
-														#msg.header.stamp)
+		self.transform_helper.fix_map_to_odom_transform(msg.pose,
+														msg.header.stamp)
 		# TODO: initialize your particle filter based on the xy_theta tuple
 
 	def publish_particles(self):

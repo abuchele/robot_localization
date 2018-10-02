@@ -72,7 +72,7 @@ class SensorModel(object):
 				observation coming from the particle at the given position.
 			"""
 			x_observation, y_observation = self.get_coordinate_of_observation(position, observaton, direction)
-			distance_to_closest = world_model.get_closest_obstacle_distance(x_observation, y_observation)
+			distance_to_closest = self.world_model.get_closest_obstacle_distance(x_observation, y_observation)
 			if isnan(distance_to_closest):
 				return 0.0
 			elif distance_to_closest == 1.0:

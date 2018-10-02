@@ -10,12 +10,14 @@ from occupancy_field import OccupancyField
 class Particle(object):
     """ Represents a particle """
     def __init__(self, position, weight, sensor_model):
+        # TODO: add documentation to describe what these attributes are.
         self.position = position
         self.weight = weight
         self.sensor_model = sensor_model
 
     def integrate_observation(self, observation):
         """ integrate an observation """
+        # TODO: integrate more than just front/back observations.
         self.weight *= self.sensor_model.get_likelihood(observation.north_laser, self.position, 1)
         self.weight *= self.sensor_model.get_likelihood(observation.south_laser, self.position, -1)
 

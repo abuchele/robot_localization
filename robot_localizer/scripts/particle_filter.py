@@ -22,12 +22,12 @@ class ParticleFilter(object):
 		w_sum = sum([p.weight for p in self.particles])
 		[p.normalize_weight(w_sum) for p in self.particles]
 
-	def integrate_observation(self):
+	def integrate_observation(self, observation):
 		""" Integrate observations for each of the particles using the observation """
 		for p in self.particles:
 			p.integrate_observation(observation)
 
-	def predict(self):
+	def predict(self, delta):
 		""" Predict the next position of each of the particles using the odometry of the robot """
 		for p in self.particles:
 			p.predict(delta)

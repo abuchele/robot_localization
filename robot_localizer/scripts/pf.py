@@ -36,22 +36,22 @@ class ParticleFilterNode(object):
 
         # create instances of two helper objects that are provided to you
         # as part of the project
-        self.filter = ParticleFilter()
+        self.particle_filter = ParticleFilter()
         self.occupancy_field = OccupancyField()
         self.transform_helper = TFHelper()
 
         self.position_delta = None # Pose, delta from current to previous odometry reading
-        self.scan = None # list of ranges
+        self.last_scan = None # list of ranges
         self.odometry = None # Pose, current odometry reading
 
         self.n_particles = 200 # number of particles
 
     def update_scan(self, msg):
         """Updates the scan to the most recent reading"""
-        self.scan = msg.ranges
+        self.last_scan = [(i, msg.ranges[i]) for i in len(msg.ranges)]
 
     def update_position(self, msg):
-        """Store change in position since last odometry reading."""
+        """Calculate delta in position since last odometry reading, update current odometry reading"""
         self.position_delta = Pose()
         self.position_delta.position = Point()
         self.position_delta.orientataion = Quaternion()
@@ -69,7 +69,7 @@ class ParticleFilterNode(object):
 
         self.odometry = this_pose
 
-        # TODO: send delta where it's going
+        self.particle_filter.predict(self.position_delta)
 
 
     def reinitialize_particles(self, initial_pose):
@@ -95,6 +95,8 @@ class ParticleFilterNode(object):
         xy_theta = \
             self.transform_helper.convert_pose_to_xy_and_theta(msg.pose.pose)
 
+        self.reinitialize_particles(msg.pose.pose)
+
         # TODO this should be deleted before posting
         self.transform_helper.fix_map_to_odom_transform(msg.pose.pose,
                                                         msg.header.stamp)
@@ -113,9 +115,18 @@ class ParticleFilterNode(object):
             # in the main loop all we do is continuously broadcast the latest
             # map to odom transform
             self.transform_helper.send_last_map_to_odom_transform()
+
+            if self.last_scan != None:
+                self.particle_filter.integrate_observation(self.last_scan)
+                self.last_scan = None
+
+            self.particle_filter.normalize()
+            self.publish_particles()
+            self.particle_filter.resample()
+
             r.sleep()
 
 if __name__ == '__main__':
-    n = ParticleFilter()
+    n = ParticleFilterNode()
     n.run()
 

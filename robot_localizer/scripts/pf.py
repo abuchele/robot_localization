@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
@@ -39,14 +39,33 @@ class ParticleFilterNode(object):
         self.transform_helper = TFHelper()
         self.position_delta = None
         self.scan = None
+        self.odometry = None
 
     def update_scan(self, msg):
         """Updates the scan to the most recent reading"""
-        pass
+        self.scan = msg.ranges
 
     def update_position(self, msg):
         """Store change in position since last odometry reading."""
-        pass
+        self.position_delta = Pose()
+        self.position_delta.position = Point()
+        self.position_delta.orientataion = Quaternion()
+
+        this_pose = msg.pose.pose
+
+        self.position_delta.position.x = this_pose.position.x - self.odometry.position.x
+        self.position_delta.position.y = this_pose.position.y - self.odometry.position.y
+        self.position_delta.position.z = this_pose.position.z - self.odometry.position.z
+
+        self.position_delta.orientataion.x = this_pose.orientataion.x - self.odometry.orientataion.x
+        self.position_delta.orientataion.y = this_pose.orientataion.y - self.odometry.orientataion.y
+        self.position_delta.orientataion.z = this_pose.orientataion.z - self.odometry.orientataion.z
+        self.position_delta.orientataion.w = this_pose.orientataion.w - self.odometry.orientataion.w
+
+        self.odometry = this_pose
+
+        # TODO: send delta where it's going
+
 
     def reinitialize_particles(self, initial_position):
         """Reinitialize particles when a new initial position is given."""
@@ -65,8 +84,11 @@ class ParticleFilterNode(object):
         # TODO: initialize your particle filter based on the xy_theta tuple
 
     def publish_particles(self):
-        # TODO: convert particles in particle_filter to a PoseArray to be published.
-        pass
+        """ Extract pose from each particle and publish them as PoseArray"""
+        pose_array = PoseArray()
+        for particle in particle_filter.particles:
+            pose_array.poses.append(particle.position)
+        self.particle_pub.publish(pose_array)
 
     def run(self):
         r = rospy.Rate(5)
@@ -80,3 +102,4 @@ class ParticleFilterNode(object):
 if __name__ == '__main__':
     n = ParticleFilter()
     n.run()
+

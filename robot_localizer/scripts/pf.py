@@ -4,12 +4,14 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 from particle_filter import ParticleFilter
 from particle import Particle
+
+from numpy.random import randn, random_sample
 
 
 class ParticleFilterNode(object):
@@ -37,20 +39,54 @@ class ParticleFilterNode(object):
         self.filter = ParticleFilter()
         self.occupancy_field = OccupancyField()
         self.transform_helper = TFHelper()
-        self.position_delta = None
-        self.scan = None
+
+        self.position_delta = None # Pose, delta from current to previous odometry reading
+        self.scan = None # list of ranges
+        self.odometry = None # Pose, current odometry reading
+
+        self.n_particles = 200 # number of particles
 
     def update_scan(self, msg):
         """Updates the scan to the most recent reading"""
-        pass
+        self.scan = msg.ranges
 
     def update_position(self, msg):
         """Store change in position since last odometry reading."""
-        pass
+        self.position_delta = Pose()
+        self.position_delta.position = Point()
+        self.position_delta.orientataion = Quaternion()
 
-    def reinitialize_particles(self, initial_position):
-        """Reinitialize particles when a new initial position is given."""
-        pass
+        this_pose = msg.pose.pose
+
+        self.position_delta.position.x = this_pose.position.x - self.odometry.position.x
+        self.position_delta.position.y = this_pose.position.y - self.odometry.position.y
+        self.position_delta.position.z = this_pose.position.z - self.odometry.position.z
+
+        self.position_delta.orientataion.x = this_pose.orientataion.x - self.odometry.orientataion.x
+        self.position_delta.orientataion.y = this_pose.orientataion.y - self.odometry.orientataion.y
+        self.position_delta.orientataion.z = this_pose.orientataion.z - self.odometry.orientataion.z
+        self.position_delta.orientataion.w = this_pose.orientataion.w - self.odometry.orientataion.w
+
+        self.odometry = this_pose
+
+        # TODO: send delta where it's going
+
+
+    def reinitialize_particles(self, initial_pose):
+        """Reinitialize particles when a new initial pose is given."""
+        for i in range(self.n_particles):
+            pose = Pose()
+            pose.position.x = initial_pose.position.x + 2*randn() - 1
+            pose.position.y = initial_pose.position.y + 2*randn() - 1
+
+            pose.orientation.x = initial_pose.orientation.x + 2*randn() - 1
+            pose.orientation.y = initial_pose.orientation.y + 2*randn() - 1
+            pose.orientation.z = initial_pose.orientation.z + 2*randn() - 1
+            pose.orientation.w = initial_pose.orientation.w + 2*randn() - 1
+
+            self.particle_filter.add_particle(Particle(position=pose,
+                                          weight=1/float(self.n_particles),
+                                          sensor_model=self.sensor_model))
 
     def update_initial_pose(self, msg):
         """ Callback function to handle re-initializing the particle filter
@@ -65,8 +101,10 @@ class ParticleFilterNode(object):
         # TODO: initialize your particle filter based on the xy_theta tuple
 
     def publish_particles(self):
-        # TODO: convert particles in particle_filter to a PoseArray to be published.
-        pass
+        """ Extract pose from each particle and publish them as PoseArray"""
+        pose_array = PoseArray()
+        pose_array.poses = [p.position for p in particle_filter.particles]
+        self.particle_pub.publish(pose_array)
 
     def run(self):
         r = rospy.Rate(5)
@@ -80,3 +118,4 @@ class ParticleFilterNode(object):
 if __name__ == '__main__':
     n = ParticleFilter()
     n.run()
+

@@ -12,6 +12,7 @@ from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 from particle_filter import ParticleFilter
 from particle import Particle
+from sensor_model import SensorModel
 
 from numpy.random import randn, random_sample
 
@@ -29,9 +30,9 @@ class ParticleFilterNode(object):
 		self.occupancy_field = OccupancyField()
 		self.transform_helper = TFHelper()
 		self.sensor_model = sensor_model = SensorModel(model_noise_rate=0.05,
-                                   odom_noise_rate=0.1,
+                                   odometry_noise_rate=0.1,
                                    world_model=self.occupancy_field,
-                                   real_robot=real_robot)
+                                   TFHelper=self.transform_helper)
 
 		self.position_delta = None # Pose, delta from current to previous odometry reading
 		self.last_scan = None # list of ranges

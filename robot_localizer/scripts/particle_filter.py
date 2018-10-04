@@ -52,8 +52,6 @@ class ParticleFilter(object):
 
 	def resample(self):
 		""" Update the list of particles using the weighted values. Reset the weights. This should result in a tighter grouping of particles"""
-		self.particles = ParticleFilter.weighted_values(self.particles,
-                                                                                                    [p.weight for p in self.particles],
-                                                                                                    len(self.particles))
+		self.particles = ParticleFilter.weighted_values(self.particles, [p.weight for p in self.particles], len(self.particles))
 		for p in self.particles:
 			p.weight = 1./len(self.particles)

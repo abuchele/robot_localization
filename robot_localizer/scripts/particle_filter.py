@@ -8,6 +8,7 @@ from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 from particle import Particle
 from sensor_model import SensorModel
+from copy import deepcopy
 
 import numpy as np
 from numpy.random import random_sample

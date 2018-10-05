@@ -8,6 +8,7 @@ from helper_functions import TFHelper
 from occupancy_field import OccupancyField
 
 import numpy as np
+import math
 from scipy.stats import norm
 
 class SensorModel(object):
@@ -53,8 +54,8 @@ class SensorModel(object):
 
 		direction_radians = np.deg2rad(direction)
 		direction_rel = self.TFHelper.angle_normalize(direction_radians + theta_pos)
-		x_observation = np.cos(direction_rel) * observation + x_pos
-		y_observation = np.sin(direction_rel) * observation + y_pos
+		x_observation = math.cos(direction_rel) * observation + x_pos
+		y_observation = math.sin(direction_rel) * observation + y_pos
 
 		return x_observation, y_observation
 
@@ -63,7 +64,7 @@ class SensorModel(object):
 		
 		Parmeters
 		---------
-		position: a Pose object representing the
+		position: a Vector3 object representing the
 			position of a particle.
 		observation: a single reading from the LIDAR scan.
 		direction: the angle from which the observation came from relative

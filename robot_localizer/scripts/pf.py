@@ -38,7 +38,8 @@ class ParticleFilterNode(object):
 		self.last_scan = None # list of ranges
 		self.odom = None # Pose, current odometry reading
 
-		self.n_particles = 200 # number of particles
+		self.n_particles = 20 # number of particles
+		#self.n_particles = 200 # number of particles
 
 		# pose_listener responds to selection of a new approximate robot
 		# location (for instance using rviz)
@@ -111,10 +112,12 @@ class ParticleFilterNode(object):
 
 		self.reinitialize_particles(msg.pose)
 
-		# TODO this should be deleted before posting
-		self.transform_helper.fix_map_to_odom_transform(msg.pose,
-														msg.header.stamp)
-		# TODO: initialize your particle filter based on the xy_theta tuple
+#		# TODO this should be deleted before posting
+                try:
+                    self.transform_helper.fix_map_to_odom_transform(msg.pose, msg.header.stamp)
+                except Exception as e:
+                    print(type(e))
+#		# TODO: initialize your particle filter based on the xy_theta tuple
 
 	def publish_particles(self):
 		""" Extract pose from each particle and publish them as PoseArray"""
@@ -128,16 +131,21 @@ class ParticleFilterNode(object):
 		while not(rospy.is_shutdown()):
 			# in the main loop all we do is continuously broadcast the latest
 			# map to odom transform
-			self.transform_helper.send_last_map_to_odom_transform()
+                        try:
+                            self.transform_helper.send_last_map_to_odom_transform()
+                            print(len(self.particle_filter.particles), "particles\n")
+                            if len(self.particle_filter.particles) > 0:
+                                    if self.last_scan != None:
+                                        self.particle_filter.integrate_observation(self.last_scan)
+                                        self.last_scan = None
 
-			if len(self.particle_filter.particles) > 0:
-				if self.last_scan != None:
-				    self.particle_filter.integrate_observation(self.last_scan)
-				    self.last_scan = None
+                                    self.particle_filter.normalize()
+                                    self.publish_particles()
+                                    self.particle_filter.resample()
 
-				self.particle_filter.normalize()
-				self.publish_particles()
-				self.particle_filter.resample()
+                        except TransformException:
+                            print("There was a transform exception")
+
 
 			r.sleep()
 

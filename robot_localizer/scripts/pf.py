@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Point, Quaternion
+from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Point, Quaternion, Vector3
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
@@ -28,11 +28,11 @@ class ParticleFilterNode(object):
                 # as part of the project
                 self.particle_filter = ParticleFilter()
                 self.occupancy_field = OccupancyField()
-                self.transform_helper = TFHelper()
+                self.TFHelper = TFHelper()
                 self.sensor_model = sensor_model = SensorModel(model_noise_rate=0.05,
                                    odometry_noise_rate=0.1,
                                    world_model=self.occupancy_field,
-                                   TFHelper=self.transform_helper)
+                                   TFHelper=self.TFHelper)
 
                 self.position_delta = None # Pose, delta from current to previous odometry reading
                 self.last_scan = None # list of ranges
@@ -62,28 +62,19 @@ class ParticleFilterNode(object):
 
         def update_position(self, msg):
                 """Calculate delta in position since last odometry reading, update current odometry reading"""
-                self.position_delta = Pose()
-                self.position_delta.position = Point()
-                self.position_delta.orientation = Quaternion()
+                self.position_delta = Vector3()
 
-                this_pose = msg.pose.pose
-
+                this_pos = self.TFHelper.convert_pose_to_xy_and_theta(msg.pose.pose)
                 if self.odom is not None:
 
-                        self.position_delta.position.x = this_pose.position.x - self.odom.position.x
-                        self.position_delta.position.y = this_pose.position.y - self.odom.position.y
-                        self.position_delta.position.z = this_pose.position.z - self.odom.position.z
-
-                        # TODO Convert pose to xytheta tuple.
-                        self.position_delta.orientation.x = this_pose.orientation.x - self.odom.orientation.x
-                        self.position_delta.orientation.y = this_pose.orientation.y - self.odom.orientation.y
-                        self.position_delta.orientation.z = this_pose.orientation.z - self.odom.orientation.z
-                        self.position_delta.orientation.w = this_pose.orientation.w - self.odom.orientation.w
-
+                	prev_pos = self.TFHelper.convert_pose_to_xy_and_theta(self.odom)
+                        self.position_delta.x = this_pos.x - prev_pos.x
+                        self.position_delta.y = this_pos.y - prev_pos.y
+                        self.position_delta.z = self.TFHelper.angle_diff(this_pos.z, prev_pos.z)
                 else:
-                        self.position_delta = this_pose
+                        self.position_delta = this_pos
 
-                self.odom = this_pose
+                self.odom = msg.pose.pose
 
                 self.particle_filter.predict(self.position_delta)
 
@@ -91,16 +82,15 @@ class ParticleFilterNode(object):
         def reinitialize_particles(self, initial_pose):
                 """Reinitialize particles when a new initial pose is given."""
                 for i in range(self.n_particles):
-                        pose = Pose()
-                        pose.position.x = initial_pose.position.x + 2*randn() - 1
-                        pose.position.y = initial_pose.position.y + 2*randn() - 1
+                	pos = Vector3()
 
-                        pose.orientation.x = initial_pose.orientation.x + 2*randn() - 1
-                        pose.orientation.y = initial_pose.orientation.y + 2*randn() - 1
-                        pose.orientation.z = initial_pose.orientation.z + 2*randn() - 1
-                        pose.orientation.w = initial_pose.orientation.w + 2*randn() - 1
+                	initial_pose_trans = self.TFHelper.convert_pose_to_xy_and_theta(initial_pose)
 
-                        new_particle = Particle(position=pose, weight=1/float(self.n_particles), sensor_model=self.sensor_model)
+                        pos.x = initial_pose_trans.x + 2*randn() - 1
+                        pos.y = initial_pose_trans.y + 2*randn() - 1
+                        pos.z = initial_pose_trans.z + 2*randn() - 1
+
+                        new_particle = Particle(position=pos, weight=1/float(self.n_particles), sensor_model=self.sensor_model)
                         self.particle_filter.add_particle(new_particle)
 
         def update_initial_pose(self, msg):
@@ -108,17 +98,18 @@ class ParticleFilterNode(object):
                         based on a pose estimate.  These pose estimates could be generated
                         by another ROS Node or could come from the rviz GUI """
                 xy_theta = \
-                        self.transform_helper.convert_pose_to_xy_and_theta(msg.pose)
+                        self.TFHelper.convert_pose_to_xy_and_theta(msg.pose)
 
                 self.reinitialize_particles(msg.pose)
 
 #               # TODO: initialize your particle filter based on the xy_theta tuple
 
         def publish_particles(self):
-                """ Extract pose from each particle and publish them as PoseArray"""
+                """ Extract position from each particle, transform into pose, and publish them as PoseArray"""
                 pose_array = PoseArray()
-                pose_array.poses = [p.position for p in self.particle_filter.particles]
+                pose_array.poses = [self.TFHelper.convert_vector3_to_pose(p.position) for p in self.particle_filter.particles]
                 self.particle_pub.publish(pose_array)
+
 
         def run(self):
                 r = rospy.Rate(5)
@@ -127,10 +118,10 @@ class ParticleFilterNode(object):
                         # in the main loop all we do is continuously broadcast the latest
                         # map to odom transform
                         try:
-                                self.transform_helper.send_last_map_to_odom_transform()
+                                self.TFHelper.send_last_map_to_odom_transform()
                                 print(len(self.particle_filter.particles), "particles\n")
                                 if len(self.particle_filter.particles) > 0:
-                                    print([p.w for p in self.particle_filter.particles])
+                                    print([p.weight for p in self.particle_filter.particles])
                                     if self.last_scan != None:
                                         self.particle_filter.integrate_observation(self.last_scan)
                                         self.last_scan = None
@@ -139,9 +130,8 @@ class ParticleFilterNode(object):
                                     self.publish_particles()
                                     self.particle_filter.resample()
 
-                        #except TransformException:
                         except Exception as e:
-                                print(e, "\nThere was a transform exception")
+                                print(e)
 
                         r.sleep()
 

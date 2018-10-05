@@ -38,7 +38,7 @@ class Particle(object):
 		
 		Parameters
 		----------
-		delta: a Pose representing the change position the particle should be moved to.
+		delta: a Vector3 representing the change position the particle should be moved to.
 		"""
 		self.position  = self.sensor_model.sample_prediction(self.position, delta)
 

@@ -6,7 +6,7 @@ from __future__ import print_function, division
 import rospy
 
 from std_msgs.msg import Header
-from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
+from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, Vector3
 
 import tf.transformations as t
 from tf import TransformListener
@@ -22,6 +22,12 @@ class TFHelper(object):
 	def __init__(self):
 		self.tf_listener = TransformListener()
 		self.tf_broadcaster = TransformBroadcaster()
+
+	def convert_vector3_to_pose(self, position):
+		return Pose(position=Point(x=position.x,
+								   y=position.y,
+								   z=0.0),
+					orientation=t.quaternion_from_euler(0, 0, angle))
 
 	def convert_translation_rotation_to_pose(self, translation, rotation):
 		""" Convert from representation of a pose as translation and rotation
@@ -56,7 +62,7 @@ class TFHelper(object):
 							 pose.orientation.z,
 							 pose.orientation.w)
 		angles = t.euler_from_quaternion(orientation_tuple)
-		return (pose.position.x, pose.position.y, angles[2])
+		return Vector3(x=pose.position.x, y=pose.position.y, z=angles[2])
 
 	def angle_normalize(self, z):
 		""" convenience function to map an angle to the range [-pi,pi] """

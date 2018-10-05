@@ -2,7 +2,7 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, Vector3
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
@@ -34,7 +34,7 @@ class SensorModel(object):
 
 		Parameters
 		----------
-		position: a PoseWithCovarianceStamped object representing the
+		position: a Vector3 object representing the
 			position of a particle.
 		observation: a single reading from the LIDAR scan.
 		direction: the angle from which the observation came from relative
@@ -47,7 +47,9 @@ class SensorModel(object):
 			discretized to a single cell on the occupany field.
 		"""
 		# The position of the particle.
-		x_pos, y_pos, theta_pos = self.TFHelper.convert_pose_to_xy_and_theta(position)
+		x_pos = position.x
+		y_pos = position.y
+		theta_pos = position.z
 
 		direction_radians = np.deg2rad(direction)
 		direction_rel = self.TFHelper.angle_normalize(direction_radians + theta_pos)
@@ -87,24 +89,19 @@ class SensorModel(object):
 
 		Parameters
 		----------
-		position: a PoseWithCovarianceStamped object representing the
+		position: a Vector3 object representing the
 			position of a particle.
-		delta: a PoseWithCovarianceStamped object representing the change in position of the particle
+		delta: a Vector3 object representing the change in position of the particle
 
 		Returns
 		-------
-		The predicted next position of the particle with some random noise added. 
+		new_position: Vector3 object: The predicted next position of the particle with some random noise added. 
 		"""
-                # TODO: transform to x y theta tuple to calculate differences and then convert back to odom.
 
-		new_position = Pose()
-		new_position.position.x = position.position.x + delta.position.x * np.random.random_sample() * self.odometry_noise_rate
-		new_position.position.y = position.position.y + delta.position.y * np.random.random_sample() * self.odometry_noise_rate
-		new_position.position.z = position.position.z + delta.position.z * np.random.random_sample() * self.odometry_noise_rate
-		
-		new_position.orientation.w = position.orientation.w + delta.orientation.w * np.random.random_sample() * self.odometry_noise_rate
-		new_position.orientation.x = position.orientation.x + delta.orientation.x * np.random.random_sample() * self.odometry_noise_rate
-		new_position.orientation.y = position.orientation.y + delta.orientation.y * np.random.random_sample() * self.odometry_noise_rate
-		new_position.orientation.z = position.orientation.z + delta.orientation.z * np.random.random_sample() * self.odometry_noise_rate
+        	new_position = Vector3()
+
+        	new_position.x = position.x + delta.x + np.random.random_sample() * self.odometry_noise_rate
+        	new_position.y = position.y + delta.y + np.random.random_sample() * self.odometry_noise_rate
+        	new_position.z = position.z + delta.z + np.random.random_sample() * self.odometry_noise_rate
 
 		return new_position

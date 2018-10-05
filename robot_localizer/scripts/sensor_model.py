@@ -83,28 +83,6 @@ class SensorModel(object):
 		else:
 			return norm(0, self.model_noise_rate).pdf(np.abs(distance_to_closest))
 
-	def sample_prediction_new(self, current_odom, destination_odom):
-		current_odom_x, current_odom_y, current_odom_theta = TFHelper.convert_pose_to_xy_and_theta(current_odom)
-		destination_odom_x, destination_odom_y, destination_odom_theta = TFHelper.convert_pose_to_xy_and_theta(destination_odom)
-		delta_odom_x = current_odom_x - destination_odom_x
-		delta_odom_y = current_odom_y - destination_odom_y
-
-		# Perform first rotation.
-		angle_to_destination = np.atan(delta_odom_y, delta_odom_x)
-		rotation_1_angle = TFHelper.angle_diff(current_odom_theta, angle_to_destination)
-		rotation_1 = rotation_1_x, rotation_1_y, rotation_1_theta = current_odom_x, current_odom_y, current_odom_theta + rotation_1_angle
-
-		# Perform the translation.
-		distance_to_destination = delta_odom_x / np.cos(angle_to_destination)
-		translation = translation_x, translation_y, translation_theta = rotation_1_x + distance_to_destination, rotation_1_y, rotation_1_theta
-
-		# Perform second translation.
-		rotation_2_angle = TFHelper.angle_diff(translation_theta, destination_odom_theta)
-		rotation_2 = rotation_2_x, rotation_2_y, rotation_2_theta = translation_x, translation_y, translation_theta + rotation_2_angle
-		return rotation_2_x * np.random.random_sample() * self.odometry_noise_rate, rotation_2_y \
-				* np.random.random_sample() * self.odometry_noise_rate, rotation_2_theta * \
-				np.random.random_sample() * self.odometry_noise_rate
-
 	def sample_prediction(self, position, delta):
 		"""Predict the next position of a particle from a given change in odometry.
 		This function adds a small amount of noise to the prediction.
@@ -117,17 +95,44 @@ class SensorModel(object):
 
 		Returns
 		-------
-		new_position: Vector3 object: The predicted next position of the particle with some random noise added. 
+		new_pose_with_noise: Vector3 object: The predicted next position of the particle with some random noise added. 
 		"""
-<<<<<<< HEAD
-				# TODO: transform to x y theta tuple to calculate differences and then convert back to odom.
-=======
->>>>>>> 381c0814fe7348f796eb226e7382eaf11e57e202
 
-        	new_position = Vector3()
+        	destination = Vector3()
 
-        	new_position.x = position.x + delta.x + np.random.random_sample() * self.odometry_noise_rate
-        	new_position.y = position.y + delta.y + np.random.random_sample() * self.odometry_noise_rate
-        	new_position.z = position.z + delta.z + np.random.random_sample() * self.odometry_noise_rate
+			# Perform first rotation.
+			angle_to_destination = np.atan(delta.y, delta.x)
+			rotation_1_angle = TFHelper.angle_diff(postion.z, angle_to_destination)
 
-		return new_position
+			rotation_1 = Vector3()
+
+			rotation_1.x = position.x
+			rotation_1.y = position.y
+			rotation_1.z = position.z + angle_to_destination
+
+			# Perform the translation.
+			distance_to_destination = delta_odom_x / np.cos(angle_to_destination)
+
+			translation = Vector3()
+
+			translation.x = rotation_1.x + distance_to_destination
+			translation.y = rotation_1.y
+			translation.z = rotation_1.z
+
+			# Perform second translation.
+			rotation_2_angle = TFHelper.angle_diff(translation_theta, destination_odom_theta)
+
+			rotation_2 = Vector3()
+
+			rotation_2.x = translation.x
+			rotation_2.y = translation.y
+			rotation_2.z = translation.z + rotation_2_angle
+
+			new_pose_with_noise Vector3()
+			
+			new_pose_with_noise.x = rotation_2.x * np.random.random_sample() * self.odometry_noise_rate
+			new_pose_with_noise.y = rotation_2.y * np.random.random_sample() * self.odometry_noise_rate
+			new_pose_with_noise.z = rotation_2.z * np.random.random_sample() * self.odometry_noise_rate
+
+			return new_pose_with_noise
+

@@ -74,6 +74,7 @@ class ParticleFilterNode(object):
                         self.position_delta.position.y = this_pose.position.y - self.odom.position.y
                         self.position_delta.position.z = this_pose.position.z - self.odom.position.z
 
+                        # TODO Convert pose to xytheta tuple.
                         self.position_delta.orientation.x = this_pose.orientation.x - self.odom.orientation.x
                         self.position_delta.orientation.y = this_pose.orientation.y - self.odom.orientation.y
                         self.position_delta.orientation.z = this_pose.orientation.z - self.odom.orientation.z
@@ -111,12 +112,6 @@ class ParticleFilterNode(object):
 
                 self.reinitialize_particles(msg.pose)
 
-
-##               # TODO this should be deleted before posting
-#try:
-#self.transform_helper.fix_map_to_odom_transform(msg.pose, msg.header.stamp)
-#except Exception as e:
-#print(type(e))
 #               # TODO: initialize your particle filter based on the xy_theta tuple
 
         def publish_particles(self):
@@ -145,8 +140,8 @@ class ParticleFilterNode(object):
                                     self.particle_filter.resample()
 
                         #except TransformException:
-                        except:
-                                print("There was a transform exception")
+                        except Exception as e:
+                                print(e, "\nThere was a transform exception")
 
                         r.sleep()
 

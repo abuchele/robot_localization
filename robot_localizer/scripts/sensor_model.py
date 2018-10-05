@@ -25,7 +25,7 @@ class SensorModel(object):
 	def __init__(self, model_noise_rate, odometry_noise_rate, world_model, TFHelper):
 		self.model_noise_rate = model_noise_rate
 		self.odometry_noise_rate = odometry_noise_rate
-		self.world_model = world_model  # The odometry field
+		self.world_model = world_model	# The odometry field
 		self.TFHelper = TFHelper
 
 	def get_coordinate_of_observation(self, position, observation, direction):
@@ -81,6 +81,28 @@ class SensorModel(object):
 		else:
 			return norm(0, self.model_noise_rate).pdf(np.abs(distance_to_closest))
 
+	def sample_prediction_new(self, current_odom, destination_odom):
+		current_odom_x, current_odom_y, current_odom_theta = TFHelper.convert_pose_to_xy_and_theta(current_odom)
+		destination_odom_x, destination_odom_y, destination_odom_theta = TFHelper.convert_pose_to_xy_and_theta(destination_odom)
+		delta_odom_x = current_odom_x - destination_odom_x
+		delta_odom_y = current_odom_y - destination_odom_y
+
+		# Perform first rotation.
+		angle_to_destination = np.atan(delta_odom_y, delta_odom_x)
+		rotation_1_angle = TFHelper.angle_diff(current_odom_theta, angle_to_destination)
+		rotation_1 = rotation_1_x, rotation_1_y, rotation_1_theta = current_odom_x, current_odom_y, current_odom_theta + rotation_1_angle
+
+		# Perform the translation.
+		distance_to_destination = delta_odom_x / np.cos(angle_to_destination)
+		translation = translation_x, translation_y, translation_theta = rotation_1_x + distance_to_destination, rotation_1_y, rotation_1_theta
+
+		# Perform second translation.
+		rotation_2_angle = TFHelper.angle_diff(translation_theta, destination_odom_theta)
+		rotation_2 = rotation_2_x, rotation_2_y, rotation_2_theta = translation_x, translation_y, translation_theta + rotation_2_angle
+		return rotation_2_x * np.random.random_sample() * self.odometry_noise_rate, rotation_2_y \
+				* np.random.random_sample() * self.odometry_noise_rate, rotation_2_theta * \
+				np.random.random_sample() * self.odometry_noise_rate
+
 	def sample_prediction(self, position, delta):
 		"""Predict the next position of a particle from a given change in odometry.
 		This function adds a small amount of noise to the prediction.
@@ -95,7 +117,7 @@ class SensorModel(object):
 		-------
 		The predicted next position of the particle with some random noise added. 
 		"""
-                # TODO: transform to x y theta tuple to calculate differences and then convert back to odom.
+				# TODO: transform to x y theta tuple to calculate differences and then convert back to odom.
 
 		new_position = Pose()
 		new_position.position.x = position.position.x + delta.position.x * np.random.random_sample() * self.odometry_noise_rate

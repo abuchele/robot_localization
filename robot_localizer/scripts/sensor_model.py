@@ -95,7 +95,7 @@ class SensorModel(object):
 		-------
 		The predicted next position of the particle with some random noise added. 
 		"""
-		# TODO: this probably needs to be changed to do arithmetic on Pose objects.
+                # TODO: transform to x y theta tuple to calculate differences and then convert back to odom.
 
 		new_position = Pose()
 		new_position.position.x = position.position.x + delta.position.x * np.random.random_sample() * self.odometry_noise_rate

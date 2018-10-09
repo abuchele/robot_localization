@@ -38,7 +38,7 @@ class ParticleFilterNode(object):
                 self.last_scan = None # list of ranges
                 self.odom = None # Pose, current odometry reading
 
-                self.n_particles = 20 # number of particles
+                self.n_particles = 1 # number of particles
                 #self.n_particles = 200 # number of particles
 
                 # pose_listener responds to selection of a new approximate robot
@@ -117,27 +117,22 @@ class ParticleFilterNode(object):
                 while not(rospy.is_shutdown()):
                         # in the main loop all we do is continuously broadcast the latest
                         # map to odom transform
-                        try:
-                                self.TFHelper.send_last_map_to_odom_transform()
-                                print(len(self.particle_filter.particles), "particles\n")
-                                if len(self.particle_filter.particles) > 0:
-                                    print([p.weight for p in self.particle_filter.particles])
-                                    if self.last_scan != None:
-                                    	print("1")
-                                        self.particle_filter.integrate_observation(self.last_scan)
-                                        print("2")
-                                        self.last_scan = None
-                                    print("3")
-                                    self.particle_filter.normalize()
-                                    print("4")
-                                    self.publish_particles()
-                                    print("5")
-                                    self.particle_filter.resample()
-                                    print("6")
-                        except Exception as e:
-                                print(e)
-
-                        r.sleep()
+                        self.TFHelper.send_last_map_to_odom_transform()
+                        print(len(self.particle_filter.particles), "particles\n")
+                        if len(self.particle_filter.particles) > 0:
+                            print([p.weight for p in self.particle_filter.particles])
+                            if self.last_scan != None:
+                                print("1")
+                                self.particle_filter.integrate_observation(self.last_scan)
+                                print("2")
+                                self.last_scan = None
+                            print("3")
+                            self.particle_filter.normalize()
+                            print("4")
+                            self.publish_particles()
+                            print("5")
+                            self.particle_filter.resample()
+                            print("6")
 
 if __name__ == '__main__':
         n = ParticleFilterNode()

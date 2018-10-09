@@ -27,8 +27,13 @@ class ParticleFilter(object):
 
 	def integrate_observation(self, observation):
 		""" Integrate observations for each of the particles using the observation """
+                print(len(self.particles), "particles before integrate")
+                orginal_len = len(self.particles)
 		for p in self.particles:
+                        if len(self.particles) != original_len:
+                            print("CHANGE")
 			p.integrate_observation(observation)
+                print(len(self.particles), "Particles after integrate")
 
 	def predict(self, delta):
 		""" Predict the next position of each of the particles using the odometry of the robot """
@@ -47,12 +52,13 @@ class ParticleFilter(object):
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
 		for ind in indices:
-			sample.append(deepcopy(values[ind - 1]))
+			sample.append(values[ind - 1])
 		print("exiting weighted_values")
 		return sample
 
 	def resample(self):
 		""" Update the list of particles using the weighted values. Reset the weights. This should result in a tighter grouping of particles"""
+                print(len(self.particles), "length")
 		self.particles = ParticleFilter.weighted_values(self.particles, [p.weight for p in self.particles], len(self.particles))
 		for p in self.particles:
 			p.weight = 1./len(self.particles)

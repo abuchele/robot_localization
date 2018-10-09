@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 import rospy
-from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Point, Quaternion, Vector3
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion, Vector3
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
@@ -43,8 +43,8 @@ class ParticleFilterNode(object):
 
                 # pose_listener responds to selection of a new approximate robot
                 # location (for instance using rviz)
-                rospy.Subscriber("map_pose",
-                                                 PoseStamped,
+                rospy.Subscriber("initialpose",
+                                                 PoseWithCovarianceStamped,
                                                  self.update_initial_pose)
 
                 rospy.Subscriber("odom", Odometry, self.update_position)
@@ -81,6 +81,7 @@ class ParticleFilterNode(object):
 
         def reinitialize_particles(self, initial_pose):
                 """Reinitialize particles when a new initial pose is given."""
+                self.particle_filter.particles = []
                 for i in range(self.n_particles):
                 	pos = Vector3()
 
@@ -118,21 +119,22 @@ class ParticleFilterNode(object):
                         # in the main loop all we do is continuously broadcast the latest
                         # map to odom transform
                         self.TFHelper.send_last_map_to_odom_transform()
-                        print(len(self.particle_filter.particles), "particles\n")
                         if len(self.particle_filter.particles) > 0:
-                            print([p.weight for p in self.particle_filter.particles])
                             if self.last_scan != None:
+                                print(len(self.particle_filter.particles), "length before integrate")
                             	print("1")
                                 self.particle_filter.integrate_observation(self.last_scan)
+                                print(len(self.particle_filter.particles), "particles after integrate\n")
                                 print("2")
                                 self.last_scan = None
-                            print("3")
-                            self.particle_filter.normalize()
-                            print("4")
-                            self.publish_particles()
-                            print("5")
-                            self.particle_filter.resample()
-                            print("6")
+                                print("3")
+                                self.particle_filter.normalize()
+                                print(len(self.particle_filter.particles), "particles after normalize\n")
+                                print("4")
+                                self.publish_particles()
+                                print("5")
+                                self.particle_filter.resample()
+                                print("6")
                         #except Exception as e:
                                 #print(e)
                         r.sleep()

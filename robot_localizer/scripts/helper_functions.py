@@ -24,10 +24,14 @@ class TFHelper(object):
 		self.tf_broadcaster = TransformBroadcaster()
 
 	def convert_vector3_to_pose(self, position):
+		out_orientations = t.quaternion_from_euler(0, 0, position.z)
 		return Pose(position=Point(x=position.x,
 								   y=position.y,
 								   z=0.0),
-					orientation=t.quaternion_from_euler(0, 0, position.z))
+					orientation=Quaternion(x=out_orientations[0],
+										   y=out_orientations[1],
+										   z=out_orientations[2],
+										   w=out_orientations[3]))
 
 	def convert_translation_rotation_to_pose(self, translation, rotation):
 		""" Convert from representation of a pose as translation and rotation

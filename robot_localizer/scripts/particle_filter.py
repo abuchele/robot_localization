@@ -9,6 +9,7 @@ from occupancy_field import OccupancyField
 from particle import Particle
 from sensor_model import SensorModel
 from copy import deepcopy
+import copy
 
 import numpy as np
 from numpy.random import random_sample
@@ -27,13 +28,13 @@ class ParticleFilter(object):
 
 	def integrate_observation(self, observation):
 		""" Integrate observations for each of the particles using the observation """
-                print(len(self.particles), "particles before integrate")
-                orginal_len = len(self.particles)
+		print("PF INTEGRATE OBSERVATION")
+		prev_particles = len(self.particles)
 		for p in self.particles:
                         if len(self.particles) != original_len:
                             print("CHANGE")
 			p.integrate_observation(observation)
-                print(len(self.particles), "Particles after integrate")
+		print("PF EXIT INTEGRATE OBSERVATION")
 
 	def predict(self, delta):
 		""" Predict the next position of each of the particles using the odometry of the robot """
@@ -52,7 +53,7 @@ class ParticleFilter(object):
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
 		for ind in indices:
-			sample.append(values[ind - 1])
+			sample.append(copy.copy(values[ind - 1]))
 		print("exiting weighted_values")
 		return sample
 

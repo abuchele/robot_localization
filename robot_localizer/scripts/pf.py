@@ -38,7 +38,7 @@ class ParticleFilterNode(object):
                 self.last_scan = None # list of ranges
                 self.odom = None # Pose, current odometry reading
 
-                self.n_particles = 10 # number of particles
+                self.n_particles = 5 # number of particles
                 #self.n_particles = 200 # number of particles
 
                 # pose_listener responds to selection of a new approximate robot
@@ -107,7 +107,8 @@ class ParticleFilterNode(object):
         def publish_particles(self):
                 """ Extract position from each particle, transform into pose, and publish them as PoseArray"""
                 pose_array = PoseArray()
-                pose_array.poses = [self.TFHelper.convert_vector3_to_pose(p.position) for p in self.particle_filter.particles]
+                for p in self.particle_filter.particles:
+                        pose_array.poses.append(self.TFHelper.convert_vector3_to_pose(p.position))
                 self.particle_pub.publish(pose_array)
 
 

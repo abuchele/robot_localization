@@ -3,6 +3,8 @@
 from __future__ import print_function, division
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
+import numpy as np
+import math
 
 from helper_functions import TFHelper
 from occupancy_field import OccupancyField
@@ -29,8 +31,8 @@ class Particle(object):
 		----------
 		observation: a list of tuples of LIDAR readings and the angle at which they came from.
 		"""
-		for distance, angle in observation:
-			self.weight *= self.sensor_model.get_likelihood(self.position, distance, angle)
+		for i in range(len(observation)):
+			self.weight *= self.sensor_model.get_likelihood(self.position, observation[i][0], observation[i][1])
 
 	def predict(self, delta):
 		"""Predict the next position based on the delta measured using
@@ -50,4 +52,5 @@ class Particle(object):
 		----------
 		Z: an integer normalization factor with which to adjust the particle weight.
 		"""
-		self.weight /= Z
+		if Z != 0.0:
+			self.weight /= Z

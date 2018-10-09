@@ -99,41 +99,41 @@ class SensorModel(object):
 		new_pose_with_noise: Vector3 object: The predicted next position of the particle with some random noise added. 
 		"""
 
-        	destination = Vector3()
+		destination = Vector3()
 
-			# Perform first rotation.
-			angle_to_destination = np.atan(delta.y, delta.x)
-			rotation_1_angle = TFHelper.angle_diff(postion.z, angle_to_destination)
+		# Perform first rotation.
+		angle_to_destination = np.arctan2(delta.y, delta.x)
+		rotation_1_angle = self.TFHelper.angle_diff(position.z, angle_to_destination)
 
-			rotation_1 = Vector3()
+		rotation_1 = Vector3()
 
-			rotation_1.x = position.x
-			rotation_1.y = position.y
-			rotation_1.z = position.z + angle_to_destination
+		rotation_1.x = position.x
+		rotation_1.y = position.y
+		rotation_1.z = position.z + angle_to_destination
 
-			# Perform the translation.
-			distance_to_destination = delta_odom_x / np.cos(angle_to_destination)
+		# Perform the translation.
+		distance_to_destination = delta.x / np.cos(angle_to_destination)
 
-			translation = Vector3()
+		translation = Vector3()
 
-			translation.x = rotation_1.x + distance_to_destination
-			translation.y = rotation_1.y
-			translation.z = rotation_1.z
+		translation.x = rotation_1.x + distance_to_destination
+		translation.y = rotation_1.y
+		translation.z = rotation_1.z
 
-			# Perform second translation.
-			rotation_2_angle = TFHelper.angle_diff(translation_theta, destination_odom_theta)
+		# Perform second translation.
+		rotation_2_angle = self.TFHelper.angle_diff(translation.z, destination.z)
 
-			rotation_2 = Vector3()
+		rotation_2 = Vector3()
 
-			rotation_2.x = translation.x
-			rotation_2.y = translation.y
-			rotation_2.z = translation.z + rotation_2_angle
+		rotation_2.x = translation.x
+		rotation_2.y = translation.y
+		rotation_2.z = translation.z + rotation_2_angle
 
-			new_pose_with_noise Vector3()
-			
-			new_pose_with_noise.x = rotation_2.x * np.random.random_sample() * self.odometry_noise_rate
-			new_pose_with_noise.y = rotation_2.y * np.random.random_sample() * self.odometry_noise_rate
-			new_pose_with_noise.z = rotation_2.z * np.random.random_sample() * self.odometry_noise_rate
+		new_pose_with_noise = Vector3()
+		
+		new_pose_with_noise.x = rotation_2.x * np.random.random_sample() * self.odometry_noise_rate
+		new_pose_with_noise.y = rotation_2.y * np.random.random_sample() * self.odometry_noise_rate
+		new_pose_with_noise.z = rotation_2.z * np.random.random_sample() * self.odometry_noise_rate
 
-			return new_pose_with_noise
+		return new_pose_with_noise
 

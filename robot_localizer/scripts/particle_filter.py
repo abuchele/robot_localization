@@ -42,13 +42,13 @@ class ParticleFilter(object):
 			probabilities: the probability of selecting each element in values (numpy.ndarray)
 			size: the number of samples
 		"""
+		print("in weighted_values")
 		bins = np.add.accumulate(probabilities)
-		print(probabilities)
-		print(bins)
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
 		for ind in indices:
-			sample.append(deepcopy(values[ind]))
+			sample.append(deepcopy(values[ind - 1]))
+		print("exiting weighted_values")
 		return sample
 
 	def resample(self):

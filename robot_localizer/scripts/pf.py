@@ -122,7 +122,7 @@ class ParticleFilterNode(object):
                         if len(self.particle_filter.particles) > 0:
                             print([p.weight for p in self.particle_filter.particles])
                             if self.last_scan != None:
-                                print("1")
+                            	print("1")
                                 self.particle_filter.integrate_observation(self.last_scan)
                                 print("2")
                                 self.last_scan = None
@@ -133,6 +133,9 @@ class ParticleFilterNode(object):
                             print("5")
                             self.particle_filter.resample()
                             print("6")
+                        #except Exception as e:
+                                #print(e)
+                        r.sleep()
 
 if __name__ == '__main__':
         n = ParticleFilterNode()

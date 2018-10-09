@@ -27,7 +27,7 @@ class TFHelper(object):
 		return Pose(position=Point(x=position.x,
 								   y=position.y,
 								   z=0.0),
-					orientation=t.quaternion_from_euler(0, 0, angle))
+					orientation=t.quaternion_from_euler(0, 0, position.z))
 
 	def convert_translation_rotation_to_pose(self, translation, rotation):
 		""" Convert from representation of a pose as translation and rotation

@@ -48,7 +48,7 @@ class ParticleFilter(object):
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
 		for ind in indices:
-			sample.append(deepcopy(values[ind]))
+			sample.append(values[ind])
 		return sample
 
 	def resample(self):

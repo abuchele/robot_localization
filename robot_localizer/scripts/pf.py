@@ -117,18 +117,21 @@ class ParticleFilterNode(object):
             self.TFHelper.send_last_map_to_odom_transform()
             print(len(self.particle_filter.particles), "particles\n")
             if len(self.particle_filter.particles) > 0:
-                print([p.weight for p in self.particle_filter.particles])
+                print("weights before integrate:", [p.weight for p in self.particle_filter.particles])
                 if self.last_scan != None:
                     print("1")
                     self.particle_filter.integrate_observation(self.last_scan)
                     print("2")
                     self.last_scan = None
                     print("3")
+                    print("weights after integrate:", [p.weight for p in self.particle_filter.particles])
                     self.particle_filter.normalize()
                     print("4")
                     self.publish_particles()
                     print("5")
                     self.particle_filter.resample()
+                    print("weights after resample", [p.weight for p in self.particle_filter.particles])
+                    self.particle_filter.print_poses()
                     print("6")
             r.sleep()
 

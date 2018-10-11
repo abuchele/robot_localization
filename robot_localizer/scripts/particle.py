@@ -32,7 +32,9 @@ class Particle(object):
 		observation: a list of tuples of LIDAR readings and the angle at which they came from.
 		"""
 		for i in range(len(observation)):
-			self.weight *= self.sensor_model.get_likelihood(self.position, observation[i][0], observation[i][1])
+                    likelihood = self.sensor_model.get_likelihood(self.position, observation[i][0], observation[i][1])
+                    if not np.isnan(likelihood):
+			self.weight *= likelihood
 
 	def predict(self, delta):
 		"""Predict the next position based on the delta measured using

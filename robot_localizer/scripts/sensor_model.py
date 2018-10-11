@@ -78,7 +78,7 @@ class SensorModel(object):
 		x_observation, y_observation = self.get_coordinate_of_observation(position, observation, direction)
 		distance_to_closest = self.world_model.get_closest_obstacle_distance(x_observation, y_observation)
 		if np.isnan(distance_to_closest):
-			return 0.0
+			return float('nan')
 		elif distance_to_closest == 1.0:
 			return 1.0
 		else:
@@ -120,7 +120,7 @@ class SensorModel(object):
 		translation.y = rotation_1.y
 		translation.z = rotation_1.z
 
-		# Perform second translation.
+		# Perform second rotation.
 		rotation_2_angle = self.TFHelper.angle_diff(translation.z, destination.z)
 
 		rotation_2 = Vector3()
@@ -131,9 +131,9 @@ class SensorModel(object):
 
 		new_pose_with_noise = Vector3()
 		
-		new_pose_with_noise.x = rotation_2.x * np.random.random_sample() * self.odometry_noise_rate
-		new_pose_with_noise.y = rotation_2.y * np.random.random_sample() * self.odometry_noise_rate
-		new_pose_with_noise.z = rotation_2.z * np.random.random_sample() * self.odometry_noise_rate
+		new_pose_with_noise.x = rotation_2.x + (np.random.random_sample() * self.odometry_noise_rate)
+		new_pose_with_noise.y = rotation_2.y + (np.random.random_sample() * self.odometry_noise_rate)
+		new_pose_with_noise.z = rotation_2.z + (np.random.random_sample() * self.odometry_noise_rate)
 
 		return new_pose_with_noise
 

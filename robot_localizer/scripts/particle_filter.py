@@ -49,6 +49,7 @@ class ParticleFilter(object):
 		bins = np.add.accumulate(probabilities)
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
+                print(indices, " indinces!")
 		for ind in indices:
 			sample.append(copy.copy(values[ind - 1]))
 		print("exiting weighted_values")

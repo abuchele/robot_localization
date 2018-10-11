@@ -107,7 +107,7 @@ class SensorModel(object):
 
 		rotation_1.x = position.x
 		rotation_1.y = position.y
-		rotation_1.z = position.z - rotation_1_angle
+		rotation_1.z = self.TFHelper.angle_diff(position.z, rotation_1_angle)
 
 		# Perform the translation.
 		distance_to_destination = delta.x / np.cos(angle_to_destination)
@@ -126,7 +126,7 @@ class SensorModel(object):
 
 		rotation_2.x = translation.x
 		rotation_2.y = translation.y
-		rotation_2.z = translation.z + rotation_2_angle
+		rotation_2.z = self.TFHelper.angle_diff(translation.z, rotation_2_angle)
 
 		new_pose_with_noise = Vector3()
 		

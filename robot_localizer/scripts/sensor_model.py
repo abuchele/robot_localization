@@ -126,7 +126,7 @@ class SensorModel(object):
 
 		rotation_2.x = translation.x
 		rotation_2.y = translation.y
-		rotation_2.z = self.TFHelper.angle_diff(translation.z, rotation_2_angle)
+		rotation_2.z = translation.z + rotation_2_angle
 
 		new_pose_with_noise = Vector3()
 		

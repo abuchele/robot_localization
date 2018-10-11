@@ -45,19 +45,16 @@ class ParticleFilter(object):
 			probabilities: the probability of selecting each element in values (numpy.ndarray)
 			size: the number of samples
 		"""
-		print("in weighted_values")
 		bins = np.add.accumulate(probabilities)
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
                 print(indices, " indinces!")
 		for ind in indices:
 			sample.append(copy.copy(values[ind - 1]))
-		print("exiting weighted_values")
 		return sample
 
 	def resample(self):
 		""" Update the list of particles using the weighted values. Reset the weights. This should result in a tighter grouping of particles"""
-                print(len(self.particles), "length")
 		self.particles = ParticleFilter.weighted_values(self.particles, [p.weight for p in self.particles], len(self.particles))
 		for p in self.particles:
 			p.weight = 1./len(self.particles)

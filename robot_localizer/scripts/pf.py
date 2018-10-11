@@ -29,8 +29,8 @@ class ParticleFilterNode(object):
         self.particle_filter = ParticleFilter()
         self.occupancy_field = OccupancyField()
         self.TFHelper = TFHelper()
-        self.sensor_model = sensor_model = SensorModel(model_noise_rate=1.9,
-                   odometry_noise_rate=10,
+        self.sensor_model = sensor_model = SensorModel(model_noise_rate=0.05,
+                   odometry_noise_rate=0.5,
                    world_model=self.occupancy_field,
                    TFHelper=self.TFHelper)
 
@@ -38,7 +38,7 @@ class ParticleFilterNode(object):
         self.last_scan = None # list of ranges
         self.odom = None # Pose, current odometry reading
 
-        self.n_particles = 5 # number of particles
+        self.n_particles = 50 # number of particles
         #self.n_particles = 200 # number of particles
 
         # pose_listener responds to selection of a new approximate robot
@@ -118,14 +118,12 @@ class ParticleFilterNode(object):
             # in the main loop all we do is continuously broadcast the latest
             # map to odom transform
             self.TFHelper.send_last_map_to_odom_transform()
-            print(len(self.particle_filter.particles), "particles\n")
             if len(self.particle_filter.particles) > 0:
                 if self.last_scan != None:
                     self.particle_filter.integrate_observation(self.last_scan)
                     self.last_scan = None
                     self.particle_filter.normalize()
                     self.publish_particles()
-                    self.particle_filter.print_weights()
                     self.particle_filter.resample()
             r.sleep()
 

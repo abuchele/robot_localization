@@ -29,11 +29,7 @@ class ParticleFilter(object):
 	def integrate_observation(self, observation):
 		""" Integrate observations for each of the particles using the observation """
 		print("PF INTEGRATE OBSERVATION")
-                original_len = len(self.particles)
-		prev_particles = len(self.particles)
 		for p in self.particles:
-                        if len(self.particles) != original_len:
-                            print("CHANGE")
 			p.integrate_observation(observation)
 		print("PF EXIT INTEGRATE OBSERVATION")
 

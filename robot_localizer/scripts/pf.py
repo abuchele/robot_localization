@@ -99,12 +99,15 @@ class ParticleFilterNode(object):
             by another ROS Node or could come from the rviz GUI """
         self.reinitialize_particles(msg.pose.pose)
 
+        self.TFHelper.fix_map_to_odom_transform(msg.pose.pose, msg.header.stamp)
+
 
     def publish_particles(self):
         """ Extract position from each particle, transform into pose, and publish them as PoseArray"""
         pose_array = PoseArray()
         for p in self.particle_filter.particles:
             pose_array.poses.append(self.TFHelper.convert_vector3_to_pose(p.position))
+        pose_array.header.frame_id = "odom"
         self.particle_pub.publish(pose_array)
 
 
@@ -119,17 +122,11 @@ class ParticleFilterNode(object):
             if len(self.particle_filter.particles) > 0:
                 print([p.weight for p in self.particle_filter.particles])
                 if self.last_scan != None:
-                    print("1")
                     self.particle_filter.integrate_observation(self.last_scan)
-                    print("2")
                     self.last_scan = None
-                    print("3")
                     self.particle_filter.normalize()
-                    print("4")
                     self.publish_particles()
-                    print("5")
                     self.particle_filter.resample()
-                    print("6")
             r.sleep()
 
 if __name__ == '__main__':

@@ -115,24 +115,20 @@ class ParticleFilterNode(object):
             # in the main loop all we do is continuously broadcast the latest
             # map to odom transform
             self.TFHelper.send_last_map_to_odom_transform()
-            print(len(self.particle_filter.particles), "particles to start\n")
+            print(len(self.particle_filter.particles), "particles\n")
             if len(self.particle_filter.particles) > 0:
                 print([p.weight for p in self.particle_filter.particles])
                 if self.last_scan != None:
                     print("1")
                     self.particle_filter.integrate_observation(self.last_scan)
-                    print(len(self.particle_filter.particles), "particles after integrate\n")
                     print("2")
                     self.last_scan = None
                     print("3")
                     self.particle_filter.normalize()
-                    print(len(self.particle_filter.particles), "particles after normalize\n")
                     print("4")
                     self.publish_particles()
-                    print(len(self.particle_filter.particles), "particles after publish\n")
                     print("5")
                     self.particle_filter.resample()
-                    print(len(self.particle_filter.particles), "particles after resample\n")
                     print("6")
             r.sleep()
 

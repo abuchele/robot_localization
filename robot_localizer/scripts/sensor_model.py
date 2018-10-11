@@ -130,9 +130,9 @@ class SensorModel(object):
 
 		new_pose_with_noise = Vector3()
 		
-		new_pose_with_noise.x = rotation_2.x + (0.5 - np.random.random_sample() * self.odometry_noise_rate)
-		new_pose_with_noise.y = rotation_2.y + (0.5 - np.random.random_sample() * self.odometry_noise_rate)
-		new_pose_with_noise.z = rotation_2.z + (0.5 - np.random.random_sample() * self.odometry_noise_rate)
+		new_pose_with_noise.x = rotation_2.x + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
+		new_pose_with_noise.y = rotation_2.y + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
+		new_pose_with_noise.z = rotation_2.z + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
 
 		return new_pose_with_noise
 

@@ -28,10 +28,8 @@ class ParticleFilter(object):
 
 	def integrate_observation(self, observation):
 		""" Integrate observations for each of the particles using the observation """
-		print("PF INTEGRATE OBSERVATION")
 		for p in self.particles:
 			p.integrate_observation(observation)
-		print("PF EXIT INTEGRATE OBSERVATION")
 
 	def predict(self, delta):
 		""" Predict the next position of each of the particles using the odometry of the robot """
@@ -48,7 +46,6 @@ class ParticleFilter(object):
 		bins = np.add.accumulate(probabilities)
 		indices = np.digitize(random_sample(size), bins)
 		sample = []
-                print(indices, " indinces!")
 		for ind in indices:
 			sample.append(copy.copy(values[ind - 1]))
 		return sample

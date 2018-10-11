@@ -57,3 +57,9 @@ class ParticleFilter(object):
 		self.particles = ParticleFilter.weighted_values(self.particles, [p.weight for p in self.particles], len(self.particles))
 		for p in self.particles:
 			p.weight = 1./len(self.particles)
+
+        def print_weights(self):
+            print([particle.weight for particle in self.particles])
+
+        def print_poses(self):
+            print(["x: {}, y: {}, theta: {}".format(particle.position.x, particle.position.y, particle.position.z) for particle in self.particles])

@@ -120,7 +120,7 @@ class ParticleFilterNode(object):
             self.TFHelper.send_last_map_to_odom_transform()
             print(len(self.particle_filter.particles), "particles\n")
             if len(self.particle_filter.particles) > 0:
-                print([p.weight for p in self.particle_filter.particles])
+                print("weights before integrate:", [p.weight for p in self.particle_filter.particles])
                 if self.last_scan != None:
                     self.particle_filter.integrate_observation(self.last_scan)
                     self.last_scan = None

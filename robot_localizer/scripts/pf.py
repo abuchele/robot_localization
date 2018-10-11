@@ -30,7 +30,7 @@ class ParticleFilterNode(object):
         self.occupancy_field = OccupancyField()
         self.TFHelper = TFHelper()
         self.sensor_model = sensor_model = SensorModel(model_noise_rate=1.9,
-                   odometry_noise_rate= 0.0,
+                   odometry_noise_rate= 0.1,
                    world_model=self.occupancy_field,
                    TFHelper=self.TFHelper)
 
@@ -38,7 +38,10 @@ class ParticleFilterNode(object):
         self.last_scan = None # list of ranges
         self.odom = None # Pose, current odometry reading
 
-        self.n_particles = 5 # number of particles
+        self.x_y_spread = 0.2 # Spread constant for x-y initialization of particles
+        self.z_spread = 0.2 # Spread constant for z initialization of particles
+
+        self.n_particles = 30 # number of particles
         #self.n_particles = 200 # number of particles
 
         # pose_listener responds to selection of a new approximate robot
@@ -86,9 +89,9 @@ class ParticleFilterNode(object):
 
             initial_pose_trans = self.TFHelper.convert_pose_to_xy_and_theta(initial_pose)
 
-            pos.x = initial_pose_trans.x + 2*randn() - 1
-            pos.y = initial_pose_trans.y + 2*randn() - 1
-            pos.z = initial_pose_trans.z + 2*randn() - 1
+            pos.x = initial_pose_trans.x + (2*randn() - 1) * self.x_y_spread
+            pos.y = initial_pose_trans.y + (2*randn() - 1) * self.x_y_spread
+            pos.z = initial_pose_trans.z + (2*randn() - 1) * self.z_spread
 
             new_particle = Particle(position=pos, weight=1/float(self.n_particles), sensor_model=self.sensor_model)
             self.particle_filter.add_particle(new_particle)
@@ -107,7 +110,7 @@ class ParticleFilterNode(object):
         pose_array = PoseArray()
         for p in self.particle_filter.particles:
             pose_array.poses.append(self.TFHelper.convert_vector3_to_pose(p.position))
-        pose_array.header.frame_id = "base_link"
+        pose_array.header.frame_id = "map"
         self.particle_pub.publish(pose_array)
 
 

@@ -30,7 +30,7 @@ class ParticleFilterNode(object):
         self.occupancy_field = OccupancyField()
         self.TFHelper = TFHelper()
         self.sensor_model = sensor_model = SensorModel(model_noise_rate=1.9,
-                   odometry_noise_rate=10,
+                   odometry_noise_rate= 0.0,
                    world_model=self.occupancy_field,
                    TFHelper=self.TFHelper)
 

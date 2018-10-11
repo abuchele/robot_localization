@@ -107,7 +107,7 @@ class ParticleFilterNode(object):
         pose_array = PoseArray()
         for p in self.particle_filter.particles:
             pose_array.poses.append(self.TFHelper.convert_vector3_to_pose(p.position))
-        pose_array.header.frame_id = "odom"
+        pose_array.header.frame_id = "base_link"
         self.particle_pub.publish(pose_array)
 
 

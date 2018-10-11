@@ -112,7 +112,7 @@ class SensorModel(object):
 
 		rotation_1.x = position.x
 		rotation_1.y = position.y
-		rotation_1.z = position.z + angle_to_destination
+		rotation_1.z = position.z + rotation_1_angle
 
 		# Perform the translation.
 		distance_to_destination = delta.x / np.cos(angle_to_destination)

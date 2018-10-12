@@ -103,15 +103,18 @@ class SensorModel(object):
 		angle_to_destination = np.arctan2(delta.y, delta.x)
 		rotation_1_angle = self.TFHelper.angle_diff(position.z, angle_to_destination) 
 
+		absolute_angle = self.TFHelper.angle_normalize(position.z + angle_to_destination)
+
 		new_pose = Vector3()
 
 		distance_to_destination = delta.x / np.cos(angle_to_destination) 
 
-		new_pose.x = position.x + distance_to_destination
-		new_pose.y = position.y
+		new_pose.x = position.x + np.cos(absolute_angle)*distance_to_destination
+		new_pose.y = position.y + np.sin(absolute_angle)*distance_to_destination
 		#new_pose.z = self.TFHelper.angle_diff(self.TFHelper.angle_diff(position.z, rotation_1_angle), self.TFHelper.angle_normalize(position.z + delta.z))
 
 		new_pose.z = self.TFHelper.angle_normalize(position.z + delta.z)
+
 		new_pose_with_noise = Vector3()
 		
 		new_pose_with_noise.x = new_pose.x + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)

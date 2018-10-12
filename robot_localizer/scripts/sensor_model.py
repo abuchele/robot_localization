@@ -101,38 +101,21 @@ class SensorModel(object):
 
 		# Perform first rotation.
 		angle_to_destination = np.arctan2(delta.y, delta.x)
-		rotation_1_angle = self.TFHelper.angle_diff(position.z, angle_to_destination)
+		rotation_1_angle = self.TFHelper.angle_diff(position.z, angle_to_destination) 
 
-		rotation_1 = Vector3()
+		new_pose = Vector3()
 
-		rotation_1.x = position.x
-		rotation_1.y = position.y
-		rotation_1.z = self.TFHelper.angle_diff(position.z, rotation_1_angle)
+		distance_to_destination = delta.x / np.cos(angle_to_destination) 
 
-		# Perform the translation.
-		distance_to_destination = delta.x / np.cos(angle_to_destination)
+		new_pose.x = position.x + distance_to_destination
+		new_pose.y = position.y
+		#new_pose.z = self.TFHelper.angle_diff(self.TFHelper.angle_diff(position.z, rotation_1_angle), self.TFHelper.angle_normalize(position.z + delta.z))
 
-		translation = Vector3()
-
-		translation.x = rotation_1.x + distance_to_destination
-		translation.y = rotation_1.y
-		translation.z = rotation_1.z
-
-		# Perform second rotation.
-		dest_angle = self.TFHelper.angle_normalize(position.z + delta.z)
-		rotation_2_angle = self.TFHelper.angle_diff(translation.z, dest_angle)
-
-		rotation_2 = Vector3()
-
-		rotation_2.x = translation.x
-		rotation_2.y = translation.y
-		rotation_2.z = translation.z + rotation_2_angle
-
+		new_pose.z = self.TFHelper.angle_normalize(position.z + delta.z)
 		new_pose_with_noise = Vector3()
 		
-		new_pose_with_noise.x = rotation_2.x + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
-		new_pose_with_noise.y = rotation_2.y + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
-		new_pose_with_noise.z = rotation_2.z + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
+		new_pose_with_noise.x = new_pose.x + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
+		new_pose_with_noise.y = new_pose.y + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
+		new_pose_with_noise.z = new_pose.z + ((0.5 - np.random.random_sample()) * self.odometry_noise_rate)
 
 		return new_pose_with_noise
-
